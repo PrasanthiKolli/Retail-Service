@@ -4,8 +4,8 @@ import com.retail.rewards.dto.MonthlyReward;
 import com.retail.rewards.dto.Reward;
 import com.retail.rewards.exception.CustomerDataNotFoundException;
 import com.retail.rewards.exception.ResourceNotFoundException;
-import com.retail.rewards.model.Customer;
-import com.retail.rewards.model.Transaction;
+import com.retail.rewards.entity.Customer;
+import com.retail.rewards.entity.Transaction;
 import com.retail.rewards.repository.CustomerRepository;
 import com.retail.rewards.service.RetailerService;
 import com.retail.rewards.util.RetailerUtil;
@@ -13,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Implementation for RewardService
@@ -24,7 +21,7 @@ import java.util.Map;
  * Contains business logic to :
  * -Filter transactions within lst 3 months.
  * -Calculate reward points.
- * -Aggregate monthly ad total rewards for each customer.
+ * -Aggregate monthly and total rewards for each customer.
  */
 @Service
 public class RetailerServiceImpl implements RetailerService {
@@ -42,8 +39,8 @@ public class RetailerServiceImpl implements RetailerService {
      */
     @Override
     public List<Reward> getRewards() {
-        List<Customer> customerList = customerRepository.getAllCustomers();
-        if (customerList == null || customerList.isEmpty()) {
+        List<Customer> customerList = customerRepository.findAll();
+        if (customerList.isEmpty()) {
             throw new CustomerDataNotFoundException("No customer data found");
         }
         List<Reward> rewards = new ArrayList<>();
@@ -65,14 +62,10 @@ public class RetailerServiceImpl implements RetailerService {
 
     @Override
     public Reward getRewardByCustomerId(String customerId) {
-        List<Customer> customerList = customerRepository.getAllCustomers();
-        if (customerList == null || customerList.isEmpty()) {
-            throw new CustomerDataNotFoundException("No customer data found");
-        }
-        for (Customer customer : customerList) {
-            if (customer.getCustomerId().equalsIgnoreCase(customerId)) {
-                return getReward(customer);
-            }
+        customerId = customerId.trim().toUpperCase();
+        Optional<Customer> customer = customerRepository.findById(customerId);
+        if(customer.isPresent()){
+            return getReward(customer.get());
         }
         throw new ResourceNotFoundException("Customer with id " + customerId + " not found");
     }

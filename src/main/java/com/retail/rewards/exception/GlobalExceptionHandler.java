@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
      * @return a exception message and HTTP 204 (NO_CONTENT) status
      */
     @ExceptionHandler(CustomerDataNotFoundException.class)
-    public ResponseEntity<String> handleCustomerDataNotFound(InvalidTransactionException ex){
+    public ResponseEntity<String> handleCustomerDataNotFound(CustomerDataNotFoundException ex){
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NO_CONTENT);
     }
 

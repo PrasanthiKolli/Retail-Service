@@ -2,7 +2,7 @@
 
 ## 📌 Overview
 The **Retail Rewards Microservice** is a Spring Boot application that calculates customer reward points based on their transactions.  
-It processes transaction data for a 3‑month period, computes monthly reward points, and provides a total summary per customer.  
+It processes transaction data for a 3‑month period, computes monthly reward points, and provides a total summary per customer.
 
 This service is designed to demonstrate how to build a RESTful microservice with proper exception handling, modular design, and clean code practices.
 
@@ -42,22 +42,22 @@ Customer earn:
 3. Run the application:
    mvn spring-boot:run
 4. Access the service at:
-   http://localhost:8080
-   
+   http://localhost:8082
+
 ## API Endpoints
-  GET /rewards → Fetch rewards for all customers.
-  GET /rewards/{customerId} → Fetch rewards for a specific customer.
+GET /rewards → Fetch rewards for all customers.
+GET /rewards/{customerId} → Fetch rewards for a specific customer.
 
 ## Example Response
-  {
-  "customerId": "123",
-  "monthlyRewards": [
-    { "month": "JANUARY", "points": 120 },
-    { "month": "FEBRUARY", "points": 90 },
-    { "month": "MARCH", "points": 40 }
-  ],
-  "totalPoints": 250
-  }
+{
+"customerId": "123",
+"monthlyRewards": [
+{ "month": "JANUARY", "points": 120 },
+{ "month": "FEBRUARY", "points": 90 },
+{ "month": "MARCH", "points": 40 }
+],
+"totalPoints": 250
+}
 ## Exception Handling
     404 NOT_FOUND → Resource not found.
     
@@ -67,16 +67,35 @@ Customer earn:
     
     500 INTERNAL_SERVER_ERROR → Generic error.
 ## Project Structure
-  src/
-   ├── main/java/com/retail/rewards
-   │    ├── controller        # REST controllers
-   │    ├── service           # Business logic
-   |    ├── dto               # Response DTOs
-   |    ├── repository        # repositories
-   │    ├── model             # models
-   │    ├── exception         # Custom exceptions
-   │    └── util              # Utility classes
-   └── test/java/com/retail/rewards
-        └── ...               # Unit tests
+src/
+├── main/java/com/retail/rewards
+│    ├── controller        # REST controllers
+│    ├── service           # Business logic
+|    ├── dto               # Response DTOs
+|    ├── repository        # repositories
+│    ├── model             # models
+│    ├── exception         # Custom exceptions
+│    └── util              # Utility classes
+└── test/java/com/retail/rewards
+└── ...               # Unit tests
+## 🗄️ Database (H2)
 
+This application uses an in-memory H2 database.
 
+Access H2 Console:http://localhost:8082/h2-console
+Configuration:
+- JDBC URL: `jdbc:h2:mem:testdb`
+- Username: `sa`
+- Password: (empty)
+
+## 📁 Sample Data
+
+Initial data is loaded using:
+- `schema.sql` → Database structure
+- `data.sql` → Test data
+
+This ensures consistent setup across environments.
+
+## 👤 Author
+
+Developed by Prasanthi Kolli
