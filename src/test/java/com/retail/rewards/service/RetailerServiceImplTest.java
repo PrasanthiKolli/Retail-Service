@@ -48,7 +48,7 @@ class RetailerServiceImplTest {
         customer.setName("Alice");
     }
 
-    // ✅ ✅ SUCCESS CASE - getRewardByCustomerId
+    // SUCCESS CASE - getRewardByCustomerId
     @Test
     void testGetRewardByCustomerId_success() {
 
@@ -72,7 +72,7 @@ class RetailerServiceImplTest {
         assertTrue(result.getTotalPoints() > 0);
     }
 
-    // ✅ ✅ EXCEPTION CASE - customer not found
+    // EXCEPTION CASE - customer not found
     @Test
     void testGetRewardByCustomerId_notFound() {
 
@@ -83,7 +83,7 @@ class RetailerServiceImplTest {
                 () -> retailerService.getRewardByCustomerId(1L));
     }
 
-    // ✅ ✅ PAGINATION SUCCESS
+    // PAGINATION SUCCESS
     @Test
     void testGetRewards_success() {
 
@@ -108,7 +108,7 @@ class RetailerServiceImplTest {
         assertEquals(1, result.getTotalElements());
     }
 
-    // ✅ ✅ PAGINATION - EMPTY CASE
+    // PAGINATION - EMPTY CASE
     @Test
     void testGetRewards_empty() {
 
@@ -121,7 +121,7 @@ class RetailerServiceImplTest {
                 () -> retailerService.getRewards(0, 5));
     }
 
-    // ✅ ✅ MULTIPLE MONTH AGGREGATION
+    // MULTIPLE MONTH AGGREGATION
     @Test
     void testMonthlyAggregation() {
 
@@ -145,7 +145,7 @@ class RetailerServiceImplTest {
         assertTrue(result.getTotalPoints() > 0);
     }
 
-    // ✅ ✅ HELPER METHOD
+    // HELPER METHOD
     private Transaction createTxn(double amount, int daysAgo) {
         Transaction t = new Transaction();
         t.setAmount(BigDecimal.valueOf(amount));
