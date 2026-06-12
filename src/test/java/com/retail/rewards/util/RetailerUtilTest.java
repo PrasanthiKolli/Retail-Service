@@ -2,7 +2,6 @@ package com.retail.rewards.util;
 
 import com.retail.rewards.exception.InvalidTransactionException;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 
 import java.math.BigDecimal;
 

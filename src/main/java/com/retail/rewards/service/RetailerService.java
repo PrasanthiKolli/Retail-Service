@@ -3,8 +3,6 @@ package com.retail.rewards.service;
 import com.retail.rewards.dto.PageableReward;
 import com.retail.rewards.dto.Reward;
 
-import java.util.List;
-
 /**
  * Service interface for reward calculations
  */
