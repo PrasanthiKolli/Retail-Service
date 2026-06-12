@@ -25,6 +25,9 @@ public class GlobalExceptionHandlerTest {
     @Mock
     private CustomerDataNotFoundException customerDataNotFoundException;
 
+    @Mock
+    private PageNumberOutOfBoundException pageNumberOutOfBoundException;
+
     @BeforeEach
     void setUp(){
         MockitoAnnotations.openMocks(this);
@@ -48,6 +51,12 @@ public class GlobalExceptionHandlerTest {
     void testHandleCustomerDataNotFound(){
         ResponseEntity<String> response = exceptionHandler.handleCustomerDataNotFound(customerDataNotFoundException);
         assertEquals(204,response.getStatusCode().value());
+    }
+
+    @Test
+    void testHandlePaginationError(){
+        ResponseEntity<String> response = exceptionHandler.handlePaginationError(pageNumberOutOfBoundException);
+        assertEquals(400,response.getStatusCode().value());
     }
 
 

@@ -4,6 +4,7 @@ import com.retail.rewards.dto.MonthlyReward;
 import com.retail.rewards.dto.PageableReward;
 import com.retail.rewards.dto.Reward;
 import com.retail.rewards.exception.CustomerDataNotFoundException;
+import com.retail.rewards.exception.PageNumberOutOfBoundException;
 import com.retail.rewards.exception.ResourceNotFoundException;
 import com.retail.rewards.entity.Customer;
 import com.retail.rewards.entity.Transaction;
@@ -82,7 +83,9 @@ public class RetailerServiceImpl implements RetailerService {
         //fetches customers from the database in a paginated format
         Page<Customer> customerPage = customerRepository.findAll(request);
         List<Customer> customerList = customerPage.getContent();
-
+        if (page >= customerPage.getTotalPages() && customerPage.getTotalPages() != 0) {
+            throw new PageNumberOutOfBoundException("Page " + page + " is out of bound");
+        }
         if (customerList.isEmpty()) {
             throw new CustomerDataNotFoundException("No customer data found");
         }

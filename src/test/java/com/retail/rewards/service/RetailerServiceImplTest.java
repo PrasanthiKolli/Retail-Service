@@ -5,6 +5,7 @@ import com.retail.rewards.dto.Reward;
 import com.retail.rewards.entity.Customer;
 import com.retail.rewards.entity.Transaction;
 import com.retail.rewards.exception.CustomerDataNotFoundException;
+import com.retail.rewards.exception.PageNumberOutOfBoundException;
 import com.retail.rewards.exception.ResourceNotFoundException;
 import com.retail.rewards.repository.CustomerRepository;
 import com.retail.rewards.repository.TransactionRepository;
@@ -14,7 +15,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,7 +29,10 @@ import java.util.Collections;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.any;
+
 
 class RetailerServiceImplTest {
 
@@ -106,6 +114,22 @@ class RetailerServiceImplTest {
         assertEquals(1, result.getCustomerList().size());
         assertEquals(1, result.getCurrentPage()); // +1 logic
         assertEquals(1, result.getTotalElements());
+    }
+
+    @Test
+    void testPaginationError() {
+
+        List<Customer> customers = List.of(customer);
+
+        Page<Customer> page = new PageImpl<>(customers,
+                PageRequest.of(0, 5),
+                1);
+
+        when(customerRepository.findAll(any(Pageable.class)))
+                .thenReturn(page);
+
+        assertThrows(PageNumberOutOfBoundException.class,
+                () -> retailerService.getRewards(10, 5));
     }
 
     // PAGINATION - EMPTY CASE

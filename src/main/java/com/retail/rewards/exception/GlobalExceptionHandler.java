@@ -49,6 +49,17 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles cases where page number is out of bound.
+     *
+     * @param ex  thrown when page number is out of bound
+     * @return an exception message and HTTP Bad request status
+     */
+    @ExceptionHandler(PageNumberOutOfBoundException.class)
+    public ResponseEntity<String> handlePaginationError(PageNumberOutOfBoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    /**
      * Handles any generic or unexpected exceptions not explicitly mapped.
      *
      * @param ex thrown during application execution
