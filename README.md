@@ -35,7 +35,7 @@ Customer earn:
 ## ⚙️ Setup Instructions
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/Retail-Service.git
+   git clone https://github.com/PrasanthiKolli/Retail-Service.git
    cd Retail-Service
 2. Build the project:
    mvn clean install
@@ -45,18 +45,58 @@ Customer earn:
    http://localhost:8082
 
 ## API Endpoints
-GET /rewards → Fetch rewards for all customers.
+GET /rewards → Fetch rewards for all customers in pagination format.
 GET /rewards/{customerId} → Fetch rewards for a specific customer.
 
 ## Example Response
+GET /rewards?page=4&size=2:
 {
-"customerId": "123",
-"monthlyRewards": [
-{ "month": "JANUARY", "points": 120 },
-{ "month": "FEBRUARY", "points": 90 },
-{ "month": "MARCH", "points": 40 }
-],
-"totalPoints": 250
+  "customerList": [
+    {
+      "customerId": 9,
+      "customerName": "Isabella Davis",
+      "monthlyRewards": [
+        {
+          "yearMonth": "2026-June",
+          "points": 150
+        }
+      ],
+      "totalPoints": 150
+    },
+    {
+      "customerId": 10,
+      "customerName": "Jack White",
+      "monthlyRewards": [
+        {
+          "yearMonth": "2026-April",
+          "points": 20
+        },
+        {
+          "yearMonth": "2026-June",
+          "points": 110
+        }
+      ],
+      "totalPoints": 130
+    }
+  ],
+  "currentPage": 5,
+  "pageSize": 2,
+  "totalPages": 5,
+  "totalElements": 10
+}
+
+--------------------------------------------------------------------------------------
+GET /rewards/{customerId}:
+{
+  "customerId": 1,
+  "customerName": "Alice Johnson",
+  "monthlyRewards": [
+    {
+      "yearMonth": "2026-June",
+      "points": 180
+    }
+  ],
+  "totalPoints": 180
 }
 ## Exception Handling
     404 NOT_FOUND → Resource not found.
