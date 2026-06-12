@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
      * Handles cases where a requested resource is not found.
      *
      * @param ex  thrown when a resource cannot be located
-     * @return a exception message and HTTP 404 (NOT_FOUND) status
+     * @return an exception message and HTTP 404 (NOT_FOUND) status
      */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<String> handleNotFoundException(ResourceNotFoundException ex){
@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
      * Handles cases where a transaction is invalid (e.g., negative amount).
      *
      * @param ex  thrown when transaction data is invalid
-     * @return a exception message and HTTP 400 (BAD_REQUEST) status
+     * @return an exception message and HTTP 400 (BAD_REQUEST) status
      */
 
     @ExceptionHandler(InvalidTransactionException.class)
@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
      * Handles cases where customer data is missing or unavailable.
      *
      * @param ex  thrown when no customer data is found
-     * @return a exception message and HTTP 204 (NO_CONTENT) status
+     * @return an exception message and HTTP 204 (NO_CONTENT) status
      */
     @ExceptionHandler(CustomerDataNotFoundException.class)
     public ResponseEntity<String> handleCustomerDataNotFound(CustomerDataNotFoundException ex){

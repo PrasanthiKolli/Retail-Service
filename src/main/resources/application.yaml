@@ -1,5 +1,9 @@
 server:
   port: 8082
+
+app:
+  noOfMonths: 3
+
 spring:
   application:
     name: retailer-service
@@ -18,8 +22,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-
   h2:
     console:
       enabled: true

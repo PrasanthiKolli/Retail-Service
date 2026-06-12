@@ -1,20 +1,19 @@
 package com.retail.rewards.repository;
 
 import com.retail.rewards.entity.Customer;
-import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 /**
- * Respository class responsible for providing transaction data.
+ * Repository class responsible for providing Customer data.
  */
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer,String> {
 
-    @EntityGraph(attributePaths = "transactions")
-    List<Customer> findAll();
+    Page<Customer> findAll(@NonNull Pageable pageable);
 
 }

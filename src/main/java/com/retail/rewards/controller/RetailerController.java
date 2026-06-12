@@ -1,17 +1,13 @@
 package com.retail.rewards.controller;
 
 
+import com.retail.rewards.dto.PageableReward;
 import com.retail.rewards.dto.Reward;
 import com.retail.rewards.service.RetailerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Controller contains APIs to fetch the rewards.
@@ -25,16 +21,16 @@ public class RetailerController {
     RetailerService retailerService;
 
     /**
-     * Retrives reward points for all customers.
+     * Retrieve reward points for all customers in the form of pages.
      *
-     * @return list of rewars for all customers
+     * @return list of rewards for all customers
      */
 
-    @GetMapping
-    public ResponseEntity<List<Reward>> getRewards() {
+    @GetMapping()
+    public ResponseEntity<PageableReward> getRewards(@RequestParam(defaultValue ="0") int page, @RequestParam(defaultValue = "5") int size) {
 
-        List<Reward> rewards = retailerService.getRewards();
-        return new ResponseEntity<>(rewards, HttpStatus.OK);
+        PageableReward reward = retailerService.getRewards(page, size);
+        return new ResponseEntity<>(reward, HttpStatus.OK);
     }
 
     /**
@@ -45,7 +41,7 @@ public class RetailerController {
      */
 
     @GetMapping("/{customerId}")
-    public ResponseEntity<Reward> getRewardByCustomerId(@PathVariable String customerId) {
+    public ResponseEntity<Reward> getRewardByCustomerId(@PathVariable Long customerId) {
 
         Reward result = retailerService.getRewardByCustomerId(customerId);
 

@@ -1,5 +1,6 @@
 package com.retail.rewards.exception;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -59,6 +60,7 @@ public class GlobalExceptionHandlerTest {
                 exceptionHandler.handleGenricException(ex);
 
         assertEquals(500, response.getStatusCode().value());
+        Assertions.assertNotNull(response.getBody());
         assertTrue(response.getBody().contains("Unexpected error"));
     }
 

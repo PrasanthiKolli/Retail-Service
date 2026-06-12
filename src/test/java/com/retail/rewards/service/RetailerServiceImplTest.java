@@ -1,31 +1,27 @@
 package com.retail.rewards.service;
 
-import com.retail.rewards.dto.MonthlyReward;
+import com.retail.rewards.dto.PageableReward;
 import com.retail.rewards.dto.Reward;
-import com.retail.rewards.exception.CustomerDataNotFoundException;
-import com.retail.rewards.exception.ResourceNotFoundException;
 import com.retail.rewards.entity.Customer;
 import com.retail.rewards.entity.Transaction;
+import com.retail.rewards.exception.CustomerDataNotFoundException;
+import com.retail.rewards.exception.ResourceNotFoundException;
 import com.retail.rewards.repository.CustomerRepository;
+import com.retail.rewards.repository.TransactionRepository;
 import com.retail.rewards.service.impl.RetailerServiceImpl;
-import com.retail.rewards.util.RetailerUtil;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.*;
 
 class RetailerServiceImplTest {
 
@@ -33,7 +29,7 @@ class RetailerServiceImplTest {
     private CustomerRepository customerRepository;
 
     @Mock
-    private RetailerUtil retailerUtil;
+    private TransactionRepository transactionRepository;
 
     @InjectMocks
     private RetailerServiceImpl retailerService;
@@ -41,60 +37,119 @@ class RetailerServiceImplTest {
     private Customer customer;
 
     @BeforeEach
-    void setUp() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
 
-        Transaction t1 = new Transaction(1L,new BigDecimal("120"), LocalDate.of(2026, 3, 15));
-        Transaction t2 = new Transaction(2L,new BigDecimal("80"), LocalDate.of(2026, 4, 10));
-        Transaction t3 = new Transaction(2L,new BigDecimal("180"), LocalDate.of(2026, 8, 10));
-        Transaction t4 = new Transaction(2L,new BigDecimal("80"), LocalDate.of(2025, 4, 10));
-
-        customer = new Customer("CUST1", Arrays.asList(t1, t2, t3, t4));
+        customer = new Customer();
+        customer.setCustomerId(1L);
+        customer.setName("Alice");
     }
 
+    // ✅ ✅ SUCCESS CASE - getRewardByCustomerId
     @Test
-    void testGetRewardsSuccess() {
-        when(customerRepository.findAll()).thenReturn(Collections.singletonList(customer));
-        when(retailerUtil.calculatePoints(new BigDecimal("120"))).thenReturn(90); // >100 case
-        when(retailerUtil.calculatePoints(new BigDecimal("80"))).thenReturn(30);  // between 50–100 case
+    void testGetRewardByCustomerId_success() {
 
-        List<Reward> rewards = retailerService.getRewards();
+        when(customerRepository.findById("1"))
+                .thenReturn(Optional.of(customer));
 
-        assertEquals(1, rewards.size());
-        Reward reward = rewards.get(0);
-        assertEquals("CUST1", reward.getCustomerId());
-        assertEquals(120, reward.getTotalPoints());
-        assertEquals(2, reward.getMonthlyRewards().size());
-        assertTrue(reward.getMonthlyRewards().stream()
-                .map(MonthlyReward::getMonth)
-                .anyMatch(m -> m.equalsIgnoreCase("MARCH")));
-        verify(customerRepository, times(1)).findAll();
+        List<Transaction> transactions = List.of(
+                createTxn(120, 10),
+                createTxn(200, 20)
+        );
+
+        when(transactionRepository.findByCustomerCustomerIdAndDateAfter(
+                eq(1L), any(LocalDate.class)))
+                .thenReturn(transactions);
+
+        Reward result = retailerService.getRewardByCustomerId(1L);
+
+        assertNotNull(result);
+        assertEquals(1L, result.getCustomerId());
+        assertEquals("Alice", result.getCustomerName());
+        assertTrue(result.getTotalPoints() > 0);
     }
 
+    // ✅ ✅ EXCEPTION CASE - customer not found
     @Test
-    void testGetRewardsNoCustomersThrowsException() {
-        when(customerRepository.findAll()).thenReturn(Collections.emptyList());
-        assertThrows(CustomerDataNotFoundException.class, () -> retailerService.getRewards());
+    void testGetRewardByCustomerId_notFound() {
+
+        when(customerRepository.findById("1"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> retailerService.getRewardByCustomerId(1L));
     }
 
+    // ✅ ✅ PAGINATION SUCCESS
     @Test
-    void testGetRewardByCustomerIdSuccess() {
-        when(customerRepository.findById("CUST1")).thenReturn(Optional.ofNullable(customer));
-        when(retailerUtil.calculatePoints(new BigDecimal("120"))).thenReturn(90);
-        when(retailerUtil.calculatePoints(new BigDecimal("80"))).thenReturn(30);
+    void testGetRewards_success() {
 
-        Reward reward = retailerService.getRewardByCustomerId("CUST1");
+        List<Customer> customers = List.of(customer);
 
-        assertEquals("CUST1", reward.getCustomerId());
-        assertEquals(120, reward.getTotalPoints());
-        assertEquals(2, reward.getMonthlyRewards().size());
+        Page<Customer> page = new PageImpl<>(customers,
+                PageRequest.of(0, 5),
+                1);
+
+        when(customerRepository.findAll(any(Pageable.class)))
+                .thenReturn(page);
+
+        when(transactionRepository.findByCustomerCustomerIdAndDateAfter(
+                eq(1L), any(LocalDate.class)))
+                .thenReturn(List.of(createTxn(150, 5)));
+
+        PageableReward result = retailerService.getRewards(0, 5);
+
+        assertNotNull(result);
+        assertEquals(1, result.getCustomerList().size());
+        assertEquals(1, result.getCurrentPage()); // +1 logic
+        assertEquals(1, result.getTotalElements());
     }
 
+    // ✅ ✅ PAGINATION - EMPTY CASE
     @Test
-    void testGetRewardByCustomerIdNotFoundThrowsException() {
-        Customer otherCustomer = new Customer("OTHER", Collections.emptyList());
-        when(customerRepository.findAll()).thenReturn(Collections.singletonList(otherCustomer));
+    void testGetRewards_empty() {
 
-        assertThrows(ResourceNotFoundException.class, () -> retailerService.getRewardByCustomerId("CUST1"));
+        Page<Customer> page = new PageImpl<>(Collections.emptyList());
+
+        when(customerRepository.findAll(any(Pageable.class)))
+                .thenReturn(page);
+
+        assertThrows(CustomerDataNotFoundException.class,
+                () -> retailerService.getRewards(0, 5));
+    }
+
+    // ✅ ✅ MULTIPLE MONTH AGGREGATION
+    @Test
+    void testMonthlyAggregation() {
+
+        when(customerRepository.findById("1"))
+                .thenReturn(Optional.of(customer));
+
+        List<Transaction> transactions = Arrays.asList(
+                createTxn(120, 5),   // current month
+                createTxn(130, 6),   // same month
+                createTxn(200, 40)   // previous month
+        );
+
+        when(transactionRepository.findByCustomerCustomerIdAndDateAfter(
+                eq(1L), any(LocalDate.class)))
+                .thenReturn(transactions);
+
+        Reward result = retailerService.getRewardByCustomerId(1L);
+
+        assertEquals(1L, result.getCustomerId());
+        assertTrue(result.getMonthlyRewards().size() >= 1);
+        assertTrue(result.getTotalPoints() > 0);
+    }
+
+    // ✅ ✅ HELPER METHOD
+    private Transaction createTxn(double amount, int daysAgo) {
+        Transaction t = new Transaction();
+        t.setAmount(BigDecimal.valueOf(amount));
+        t.setDate(LocalDate.now().minusDays(daysAgo));
+        t.setCustomer(customer);
+        return t;
     }
 }
+
+

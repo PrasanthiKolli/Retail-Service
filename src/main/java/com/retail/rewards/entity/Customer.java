@@ -1,16 +1,19 @@
 package com.retail.rewards.entity;
 
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 /**
  * Represent a Customer
- * Customer contains id and list of transactions.
+ * contains id and name.
  */
 
 @Data
@@ -21,9 +24,9 @@ import java.util.List;
 public class Customer {
     @Id
     @Column(name = "customer_id")
-    private String customerId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long customerId;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "customer_id")
-    private List<Transaction> transactions;
+    @Column(name="customer_name",nullable = false)
+    private String name;
 }

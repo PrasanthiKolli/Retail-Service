@@ -2,6 +2,7 @@ package com.retail.rewards.controller;
 
 
 import com.retail.rewards.dto.MonthlyReward;
+import com.retail.rewards.dto.PageableReward;
 import com.retail.rewards.dto.Reward;
 import com.retail.rewards.service.RetailerService;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,42 +40,52 @@ public class RetailerControllerTest {
     @Test
     void testGetRewards() {
         // Arrange
-        MonthlyReward janReward = new MonthlyReward("January", 50);
-        MonthlyReward febReward = new MonthlyReward("February", 70);
+        MonthlyReward janReward = new MonthlyReward("2026-January", 50);
+        MonthlyReward febReward = new MonthlyReward("2026-February", 70);
 
-        Reward reward1 = new Reward("CUST1", Arrays.asList(janReward, febReward), 120);
-        Reward reward2 = new Reward("CUST2", Collections.singletonList(new MonthlyReward("March", 200)), 200);
-        List<Reward> rewards = Arrays.asList(reward1, reward2);
-
-        when(retailerService.getRewards()).thenReturn(rewards);
+        Reward reward1 = new Reward(1L,"Alice", Arrays.asList(janReward, febReward), 120);
+        Reward reward2 = new Reward(2L,"Bob", Collections.singletonList(new MonthlyReward("March", 200)), 200);
+        Reward reward3 = new Reward(3L,"Alice", Arrays.asList(janReward, febReward), 120);
+        Reward reward4 = new Reward(4L,"Bob", Collections.singletonList(new MonthlyReward("March", 200)), 200);
+        List<Reward> rewards = Arrays.asList(reward1, reward2,reward3,reward4);
+        PageableReward pageableReward = new PageableReward();
+        pageableReward.setCustomerList(rewards);
+        pageableReward.setTotalElements(4);
+        pageableReward.setPageSize(2);
+        pageableReward.setTotalPages(2);
+        pageableReward.setCurrentPage(1);
+        when(retailerService.getRewards(0,2)).thenReturn(pageableReward);
 
         // Act
-        ResponseEntity<List<Reward>> response = retailerController.getRewards();
+        ResponseEntity<PageableReward> response = retailerController.getRewards(0,2);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(2, response.getBody().size());
-        assertEquals("CUST1", response.getBody().get(0).getCustomerId());
-        verify(retailerService, times(1)).getRewards();
+        assertNotNull(response.getBody());
+        assertEquals(2, response.getBody().getPageSize());
+        assertEquals(1,response.getBody().getCurrentPage());
+        assertEquals(4,response.getBody().getTotalElements());
+        assertEquals(2,response.getBody().getTotalPages());
+        verify(retailerService, times(1)).getRewards(0,2);
     }
 
     @Test
     void testGetRewardByCustomerId() {
         // Arrange
-        MonthlyReward aprReward = new MonthlyReward("April", 150);
-        Reward reward = new Reward("CUST123", Collections.singletonList(aprReward), 150);
+        MonthlyReward aprReward = new MonthlyReward("2026-April", 150);
+        Reward reward1 = new Reward(1L,"Alice", Arrays.asList(aprReward), 150);
 
-        when(retailerService.getRewardByCustomerId("CUST123")).thenReturn(reward);
+        when(retailerService.getRewardByCustomerId(1L)).thenReturn(reward1);
 
         // Act
-        ResponseEntity<Reward> response = retailerController.getRewardByCustomerId("CUST123");
+        ResponseEntity<Reward> response = retailerController.getRewardByCustomerId(1L);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("CUST123", response.getBody().getCustomerId());
+        assertEquals(1L, response.getBody().getCustomerId());
         assertEquals(150, response.getBody().getTotalPoints());
-        assertEquals("April", response.getBody().getMonthlyRewards().get(0).getMonth());
-        verify(retailerService, times(1)).getRewardByCustomerId("CUST123");
+        assertEquals("2026-April", response.getBody().getMonthlyRewards().get(0).getYearMonth());
+        verify(retailerService, times(1)).getRewardByCustomerId(1L);
     }
 }

@@ -11,6 +11,7 @@ import java.util.List;
  * DTO representing reward response for a customer.
  * Includes:
  * - Customer Id
+ * - Customer Name
  * - Monthly reward points
  * - Total reward points
  */
@@ -20,7 +21,8 @@ import java.util.List;
 @NoArgsConstructor
 public class Reward {
 
-    private String customerId;
+    private Long customerId;
+    private String customerName;
     private List<MonthlyReward> monthlyRewards;
-    private int totalPoints;
+    private double totalPoints;
 }

@@ -3,6 +3,7 @@ package com.retail.rewards;
 import com.retail.rewards.entity.Customer;
 import com.retail.rewards.entity.Transaction;
 import com.retail.rewards.repository.CustomerRepository;
+import com.retail.rewards.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,117 +14,129 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Arrays;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+//Integration test class
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class RetailerServiceApplicationTest {
 
-	@Autowired
-	private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-	@Autowired
-	private CustomerRepository customerRepository;
+    @Autowired
+    private CustomerRepository customerRepository;
 
-	@BeforeEach
-	void setup() {
-		customerRepository.deleteAll();
+    @Autowired
+    private TransactionRepository transactionRepository;
 
-		// Sample transactions
-		Transaction t1 = new Transaction();
-		t1.setAmount(new BigDecimal("120")); // 90 points
-		t1.setDate(LocalDate.now().minusDays(10));
+    private Customer customer;
 
-		Transaction t2 = new Transaction();
-		t2.setAmount(new BigDecimal("70")); // 20 points
-		t2.setDate(LocalDate.now().minusDays(20));
+    @BeforeEach
+    void setup() {
 
-		Customer customer = new Customer();
-		customer.setCustomerId("C1");
-		customer.setTransactions(List.of(t1, t2));
+        // Correct order
+        transactionRepository.deleteAll();
+        customerRepository.deleteAll();
 
-		customerRepository.save(customer);
-	}
+        customer = new Customer();
+        customer.setName("Alice");
 
-	@Test
-	void shouldReturnAllCustomerRewards() throws Exception {
-		mockMvc.perform(get("/rewards"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$[0].customerId").value("C1"))
-				.andExpect(jsonPath("$[0].totalPoints").value(110));
+        customer = customerRepository.save(customer);
 
-	}
+        Transaction t1 = new Transaction();
+        t1.setAmount(new BigDecimal("120")); // 90 points
+        t1.setDate(LocalDate.now().minusDays(10));
+        t1.setCustomer(customer);
 
-	@Test
-	void shouldReturnRewardByCustomerId() throws Exception {
-		mockMvc.perform(get("/rewards/C1"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.customerId").value("C1"))
-				.andExpect(jsonPath("$.totalPoints").value(110));
-	}
+        Transaction t2 = new Transaction();
+        t2.setAmount(new BigDecimal("70")); // 20 points
+        t2.setDate(LocalDate.now().minusDays(20));
+        t2.setCustomer(customer);
 
-	@Test
-	void shouldReturnNotFound_WhenCustomerDoesNotExist() throws Exception {
-		mockMvc.perform(get("/rewards/C999"))
-				.andExpect(status().is4xxClientError());
-	}
+        transactionRepository.saveAll(Arrays.asList(t1, t2));
+    }
 
-	@Test
-	void shouldHandleNoCustomers() throws Exception {
-		customerRepository.deleteAll();
+    @Test
+    void shouldReturnAllCustomerRewards() throws Exception {
 
-		mockMvc.perform(get("/rewards"))
-				.andExpect(status().isNoContent());
-	}
+        mockMvc.perform(get("/rewards?page=0&size=5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.customerList[0].customerId")
+                        .value(customer.getCustomerId()))
+                .andExpect(jsonPath("$.customerList[0].totalPoints")
+                        .value(110));
+    }
 
+    @Test
+    void shouldReturnRewardByCustomerId() throws Exception {
 
-	@Test
-	void shouldIgnoreOldTransactions() throws Exception {
+        mockMvc.perform(get("/rewards/" + customer.getCustomerId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.customerId")
+                        .value(customer.getCustomerId()))
+                .andExpect(jsonPath("$.totalPoints").value(110));
+    }
 
-		customerRepository.deleteAll();
+    @Test
+    void shouldReturnNotFound_WhenCustomerDoesNotExist() throws Exception {
+        mockMvc.perform(get("/rewards/999"))
+                .andExpect(status().is4xxClientError());
+    }
 
-		Transaction oldTxn = new Transaction();
-		oldTxn.setAmount(new BigDecimal("200"));
-		oldTxn.setDate(LocalDate.now().minusMonths(4)); // old
+    @Test
+    void shouldIgnoreOldTransactions() throws Exception {
 
-		Customer customer = new Customer();
-		customer.setCustomerId("C2");
-		customer.setTransactions(List.of(oldTxn));
+        transactionRepository.deleteAll();
+        customerRepository.deleteAll();
 
-		customerRepository.save(customer);
+        Customer c = new Customer();
+        c.setName("Bob");
+        c = customerRepository.save(c);
 
-		mockMvc.perform(get("/rewards/C2"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.totalPoints").value(0));
-	}
+        Transaction oldTxn = new Transaction();
+        oldTxn.setAmount(new BigDecimal("200"));
+        oldTxn.setDate(LocalDate.now().minusMonths(4)); // older than 3 months
+        oldTxn.setCustomer(c);
 
+        transactionRepository.save(oldTxn);
 
-	@Test
-	void shouldHandleBoundaryValues() throws Exception {
+        mockMvc.perform(get("/rewards/" + c.getCustomerId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalPoints").value(0));
+    }
 
-		customerRepository.deleteAll();
+    // TEST 6
+    @Test
+    void shouldHandleBoundaryValues() throws Exception {
 
-		Transaction t1 = new Transaction();
-		t1.setAmount(new BigDecimal("50")); // 0 points
-		t1.setDate(LocalDate.now().minusDays(5));
+        transactionRepository.deleteAll();
+        customerRepository.deleteAll();
 
-		Transaction t2 = new Transaction();
-		t2.setAmount(new BigDecimal("100")); // 50 points
-		t2.setDate(LocalDate.now().minusDays(5));
+        Customer c = new Customer();
+        c.setName("Charlie");
+        c = customerRepository.save(c);
 
-		Customer customer = new Customer();
-		customer.setCustomerId("C3");
-		customer.setTransactions(List.of(t1, t2));
+        Transaction t1 = new Transaction();
+        t1.setAmount(new BigDecimal("50"));  // 0 points
+        t1.setDate(LocalDate.now().minusDays(5));
+        t1.setCustomer(c);
 
-		customerRepository.save(customer);
+        Transaction t2 = new Transaction();
+        t2.setAmount(new BigDecimal("100")); // 50 points
+        t2.setDate(LocalDate.now().minusDays(5));
+        t2.setCustomer(c);
 
-		mockMvc.perform(get("/rewards/C3"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.totalPoints").value(50));
-	}
+        transactionRepository.saveAll(Arrays.asList(t1, t2));
+
+        mockMvc.perform(get("/rewards/" + c.getCustomerId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalPoints").value(50));
+    }
 }

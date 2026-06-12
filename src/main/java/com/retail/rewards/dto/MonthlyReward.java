@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.YearMonth;
+
 /**
  * DTO representing monthly reward details for a specific month.
  */
@@ -11,6 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MonthlyReward {
-    private String month;
-    private int points;
+    private String yearMonth;
+    private double points;
 }
