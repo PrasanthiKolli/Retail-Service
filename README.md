@@ -45,7 +45,7 @@ Customer earn:
    http://localhost:8082
 
 ## API Endpoints
-GET /rewards → Fetch rewards for all customers in pagination format.
+GET /rewards?page=4&size=2 → Fetch rewards for all customers in pagination format.
 GET /rewards/{customerId} → Fetch rewards for a specific customer.
 
 ## Example Response
