@@ -7,8 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,15 +33,13 @@ public class Transaction {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
-    @NotNull(message = "Customer must not be null")
     private Customer customer;
 
 
-    @NotNull(message = "Amount is required")
+    @Column(nullable = false)
     private BigDecimal amount;
 
-    @NotNull(message = "Transaction date is required")
-    @PastOrPresent(message = "Transaction date cannot be in the future")
+   @Column(nullable = false)
     private LocalDate date;
 
 }

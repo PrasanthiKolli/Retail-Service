@@ -50,7 +50,7 @@ public class GlobalExceptionHandlerTest {
     @Test
     void testHandleCustomerDataNotFound(){
         ResponseEntity<String> response = exceptionHandler.handleCustomerDataNotFound(customerDataNotFoundException);
-        assertEquals(204,response.getStatusCode().value());
+        assertEquals(404,response.getStatusCode().value());
     }
 
     @Test

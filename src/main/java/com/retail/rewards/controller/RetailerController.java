@@ -21,8 +21,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RequestMapping("/rewards")
 public class RetailerController {
 
+    // constructor injection
+    private final RetailerService retailerService;
+
     @Autowired
-    RetailerService retailerService;
+    public RetailerController(RetailerService retailerService){
+        this.retailerService = retailerService;
+    }
 
     /**
      * Retrieve reward points for all customers in the form of pages.

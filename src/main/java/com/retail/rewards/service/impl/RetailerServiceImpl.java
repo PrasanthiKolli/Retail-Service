@@ -13,11 +13,13 @@ import com.retail.rewards.repository.TransactionRepository;
 import com.retail.rewards.service.RetailerService;
 import com.retail.rewards.util.RetailerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -37,7 +39,12 @@ import java.util.Optional;
  * -Aggregate monthly and total rewards for each customer.
  */
 @Service
+@Transactional(readOnly=true)
 public class RetailerServiceImpl implements RetailerService {
+
+
+    @Value("${app.noOfMonths}")
+    private int noOfMonths;
 
     private final CustomerRepository customerRepository;
 
@@ -116,7 +123,7 @@ public class RetailerServiceImpl implements RetailerService {
         double totalPoints = 0;
         Map<String, Double> monthlyPoints = new HashMap<>();
 
-        LocalDate threeMonthsAgo = LocalDate.now().minusMonths(3);
+        LocalDate threeMonthsAgo = LocalDate.now().minusMonths(noOfMonths);
         //fetches all transactions for the given customer within the last 3 months.
         List<Transaction> transactionList =
                 transactionRepository.findByCustomerCustomerIdAndDateAfter(

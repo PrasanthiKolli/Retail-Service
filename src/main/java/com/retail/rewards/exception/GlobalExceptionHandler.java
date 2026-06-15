@@ -41,11 +41,11 @@ public class GlobalExceptionHandler {
      * Handles cases where customer data is missing or unavailable.
      *
      * @param ex  thrown when no customer data is found
-     * @return an exception message and HTTP 204 (NO_CONTENT) status
+     * @return an exception message and HTTP 404 (NOT_FOUND) status
      */
     @ExceptionHandler(CustomerDataNotFoundException.class)
     public ResponseEntity<String> handleCustomerDataNotFound(CustomerDataNotFoundException ex){
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     /**
