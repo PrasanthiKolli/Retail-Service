@@ -1,5 +1,7 @@
 package com.retail.rewards.exception;
 
+import com.retail.rewards.dto.ErrorResponse;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,9 @@ public class GlobalExceptionHandlerTest {
     @Mock
     private PageNumberOutOfBoundException pageNumberOutOfBoundException;
 
+    @Mock
+    private ConstraintViolationException constraintViolationException;
+
     @BeforeEach
     void setUp(){
         MockitoAnnotations.openMocks(this);
@@ -36,26 +41,32 @@ public class GlobalExceptionHandlerTest {
     @Test
     void testHandleNotFoundException(){
 
-        ResponseEntity<String> response = exceptionHandler.handleNotFoundException(resourceNotFoundException);
+        ResponseEntity<ErrorResponse> response = exceptionHandler.handleNotFoundException(resourceNotFoundException);
 
-        assertEquals(404, response.getStatusCodeValue());
+        assertEquals(404, response.getStatusCode().value());
     }
 
     @Test
     void testHandleInvalidTransaction(){
-        ResponseEntity<String> response = exceptionHandler.handleInvalidTransaction(invalidTransactionException);
-        assertEquals(400,response.getStatusCodeValue());
+        ResponseEntity<ErrorResponse> response = exceptionHandler.handleInvalidTransaction(invalidTransactionException);
+        assertEquals(400,response.getStatusCode().value());
     }
 
     @Test
     void testHandleCustomerDataNotFound(){
-        ResponseEntity<String> response = exceptionHandler.handleCustomerDataNotFound(customerDataNotFoundException);
+        ResponseEntity<ErrorResponse> response = exceptionHandler.handleCustomerDataNotFound(customerDataNotFoundException);
         assertEquals(404,response.getStatusCode().value());
     }
 
     @Test
     void testHandlePaginationError(){
-        ResponseEntity<String> response = exceptionHandler.handlePaginationError(pageNumberOutOfBoundException);
+        ResponseEntity<ErrorResponse> response = exceptionHandler.handlePaginationError(pageNumberOutOfBoundException);
+        assertEquals(400,response.getStatusCode().value());
+    }
+
+    @Test
+    void testHandleConstraintViolationError(){
+        ResponseEntity<ErrorResponse> response = exceptionHandler.handleConstraintViolationException(constraintViolationException);
         assertEquals(400,response.getStatusCode().value());
     }
 
@@ -65,12 +76,12 @@ public class GlobalExceptionHandlerTest {
 
         Exception ex = new Exception("Unexpected error");
 
-        ResponseEntity<String> response =
+        ResponseEntity<ErrorResponse> response =
                 exceptionHandler.handleGenricException(ex);
 
         assertEquals(500, response.getStatusCode().value());
         Assertions.assertNotNull(response.getBody());
-        assertTrue(response.getBody().contains("Unexpected error"));
+        assertTrue(response.getBody().getMessage().contains("Unexpected error"));
     }
 
 }

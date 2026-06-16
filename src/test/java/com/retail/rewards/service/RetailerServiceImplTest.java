@@ -60,7 +60,7 @@ class RetailerServiceImplTest {
     @Test
     void testGetRewardByCustomerId_success() {
 
-        when(customerRepository.findById("1"))
+        when(customerRepository.findById(1L))
                 .thenReturn(Optional.of(customer));
 
         List<Transaction> transactions = List.of(
@@ -68,8 +68,8 @@ class RetailerServiceImplTest {
                 createTxn(200, 20)
         );
 
-        when(transactionRepository.findByCustomerCustomerIdAndDateAfter(
-                eq(1L), any(LocalDate.class)))
+        when(transactionRepository.findByCustomerCustomerIdAndDateBetween(
+                eq(1L), any(LocalDate.class),any(LocalDate.class)))
                 .thenReturn(transactions);
 
         Reward result = retailerService.getRewardByCustomerId(1L);
@@ -84,7 +84,7 @@ class RetailerServiceImplTest {
     @Test
     void testGetRewardByCustomerId_notFound() {
 
-        when(customerRepository.findById("1"))
+        when(customerRepository.findById(1L))
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
@@ -104,8 +104,8 @@ class RetailerServiceImplTest {
         when(customerRepository.findAll(any(Pageable.class)))
                 .thenReturn(page);
 
-        when(transactionRepository.findByCustomerCustomerIdAndDateAfter(
-                eq(1L), any(LocalDate.class)))
+        when(transactionRepository.findByCustomerCustomerIdAndDateBetween(
+                eq(1L), any(LocalDate.class),any(LocalDate.class)))
                 .thenReturn(List.of(createTxn(150, 5)));
 
         PageableReward result = retailerService.getRewards(0, 5);
@@ -149,7 +149,7 @@ class RetailerServiceImplTest {
     @Test
     void testMonthlyAggregation() {
 
-        when(customerRepository.findById("1"))
+        when(customerRepository.findById(1L))
                 .thenReturn(Optional.of(customer));
 
         List<Transaction> transactions = Arrays.asList(
@@ -158,14 +158,14 @@ class RetailerServiceImplTest {
                 createTxn(200, 40)   // previous month
         );
 
-        when(transactionRepository.findByCustomerCustomerIdAndDateAfter(
-                eq(1L), any(LocalDate.class)))
+        when(transactionRepository.findByCustomerCustomerIdAndDateBetween(
+                eq(1L), any(LocalDate.class),any(LocalDate.class)))
                 .thenReturn(transactions);
 
         Reward result = retailerService.getRewardByCustomerId(1L);
 
         assertEquals(1L, result.getCustomerId());
-        assertTrue(result.getMonthlyRewards().size() >= 1);
+        assertFalse(result.getMonthlyRewards().isEmpty());
         assertTrue(result.getTotalPoints() > 0);
     }
 

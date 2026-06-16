@@ -40,17 +40,17 @@ public class RetailerControllerTest {
     @Test
     void testGetRewards() {
         // Arrange
-        MonthlyReward janReward = new MonthlyReward("2026-January", 50);
-        MonthlyReward febReward = new MonthlyReward("2026-February", 70);
+        MonthlyReward janReward = new MonthlyReward("2026-January", 50L);
+        MonthlyReward febReward = new MonthlyReward("2026-February", 70L);
 
-        Reward reward1 = new Reward(1L,"Alice", Arrays.asList(janReward, febReward), 120);
-        Reward reward2 = new Reward(2L,"Bob", Collections.singletonList(new MonthlyReward("March", 200)), 200);
-        Reward reward3 = new Reward(3L,"Alice", Arrays.asList(janReward, febReward), 120);
-        Reward reward4 = new Reward(4L,"Bob", Collections.singletonList(new MonthlyReward("March", 200)), 200);
+        Reward reward1 = new Reward(1L,"Alice", Arrays.asList(janReward, febReward), 120L);
+        Reward reward2 = new Reward(2L,"Bob", Collections.singletonList(new MonthlyReward("March", 200L)), 200L);
+        Reward reward3 = new Reward(3L,"Alice", Arrays.asList(janReward, febReward), 120L);
+        Reward reward4 = new Reward(4L,"Bob", Collections.singletonList(new MonthlyReward("March", 200L)), 200L);
         List<Reward> rewards = Arrays.asList(reward1, reward2,reward3,reward4);
         PageableReward pageableReward = new PageableReward();
         pageableReward.setCustomerList(rewards);
-        pageableReward.setTotalElements(4);
+        pageableReward.setTotalElements(4L);
         pageableReward.setPageSize(2);
         pageableReward.setTotalPages(2);
         pageableReward.setCurrentPage(1);
@@ -72,8 +72,8 @@ public class RetailerControllerTest {
     @Test
     void testGetRewardByCustomerId() {
         // Arrange
-        MonthlyReward aprReward = new MonthlyReward("2026-April", 150);
-        Reward reward1 = new Reward(1L,"Alice", Arrays.asList(aprReward), 150);
+        MonthlyReward aprReward = new MonthlyReward("2026-April", 150L);
+        Reward reward1 = new Reward(1L,"Alice", Arrays.asList(aprReward), 150L);
 
         when(retailerService.getRewardByCustomerId(1L)).thenReturn(reward1);
 

@@ -4,13 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * DTO representing monthly reward details for a specific month.
- */
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MonthlyReward {
-    private String yearMonth;
-    private Long points;
+public class ErrorResponse {
+
+    private Integer status;
+    private String message;
+    private LocalDateTime timestamp;
+
 }

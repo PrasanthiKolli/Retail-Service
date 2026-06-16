@@ -16,7 +16,7 @@ INSERT INTO transactions (amount, date, customer_id)
 VALUES (120, CURRENT_DATE - 10, 1);
 
 INSERT INTO transactions (amount, date, customer_id)
-VALUES (120, CURRENT_DATE - 5, 1);
+VALUES (120.34, CURRENT_DATE - 5, 1);
 
 INSERT INTO transactions (amount, date, customer_id)
 VALUES (75, CURRENT_DATE - 135, 1);
@@ -37,6 +37,12 @@ VALUES (150, CURRENT_DATE - 60, 2);
 -- Customer 3
 INSERT INTO transactions (amount, date, customer_id)
 VALUES (90, CURRENT_DATE - 3, 3);
+
+INSERT INTO transactions (amount, date, customer_id)
+VALUES (80, CURRENT_DATE , 3);
+
+INSERT INTO transactions (amount, date, customer_id)
+VALUES (80, CURRENT_DATE-93 , 3);
 
 INSERT INTO transactions (amount, date, customer_id)
 VALUES (60, CURRENT_DATE - 25, 3);

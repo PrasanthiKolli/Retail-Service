@@ -15,8 +15,8 @@ import java.util.List;
 @NoArgsConstructor
 public class PageableReward {
     private List<Reward> customerList;
-    private int currentPage;
-    private int pageSize;
-    private int totalPages;
-    private long totalElements;
+    private Integer currentPage;
+    private Integer pageSize;
+    private Integer totalPages;
+    private Long totalElements;
 }

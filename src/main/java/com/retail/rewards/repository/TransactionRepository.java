@@ -13,5 +13,5 @@ import java.util.List;
 public interface TransactionRepository extends JpaRepository<Transaction,Long> {
 
     //List of last 3 months transactions based on customerId.
-    List<Transaction> findByCustomerCustomerIdAndDateAfter(Long customerId, LocalDate threeMonthsAgo);
+    List<Transaction> findByCustomerCustomerIdAndDateBetween(Long customerId, LocalDate threeMonthsAgo, LocalDate today);
 }

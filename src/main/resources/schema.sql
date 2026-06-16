@@ -12,7 +12,7 @@ CREATE TABLE customers (
 --create table for transactions.
 CREATE TABLE transactions (
           id BIGINT AUTO_INCREMENT PRIMARY KEY,
-          amount DECIMAL(15, 2) NOT NULL,
+          amount DECIMAL(10, 2) NOT NULL,
           date DATE NOT NULL,
           customer_id BIGINT NOT NULL,
 

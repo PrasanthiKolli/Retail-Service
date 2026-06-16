@@ -24,5 +24,5 @@ public class Reward {
     private Long customerId;
     private String customerName;
     private List<MonthlyReward> monthlyRewards;
-    private double totalPoints;
+    private Long totalPoints;
 }

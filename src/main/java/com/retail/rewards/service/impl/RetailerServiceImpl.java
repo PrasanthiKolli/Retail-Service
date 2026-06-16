@@ -42,7 +42,6 @@ import java.util.Optional;
 @Transactional(readOnly=true)
 public class RetailerServiceImpl implements RetailerService {
 
-
     @Value("${app.noOfMonths}")
     private int noOfMonths;
 
@@ -51,9 +50,10 @@ public class RetailerServiceImpl implements RetailerService {
     private final TransactionRepository transactionRepository;
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MMMM");
+
     //constructor injection
     @Autowired
-    public RetailerServiceImpl(CustomerRepository customerRepository, RetailerUtil retailerUtil, TransactionRepository transactionRepository) {
+    public RetailerServiceImpl(CustomerRepository customerRepository, TransactionRepository transactionRepository) {
         this.customerRepository = customerRepository;
         this.transactionRepository = transactionRepository;
     }
@@ -64,11 +64,10 @@ public class RetailerServiceImpl implements RetailerService {
      * @param customerId customer identifier
      * @return reward response
      */
-
     @Override
     public Reward getRewardByCustomerId(Long customerId) {
         //fetch customer details based on id.
-        Optional<Customer> customer = customerRepository.findById(String.valueOf(customerId));
+        Optional<Customer> customer = customerRepository.findById(customerId);
         if(customer.isPresent()){
             return getReward(customer.get());
         }
@@ -90,13 +89,15 @@ public class RetailerServiceImpl implements RetailerService {
         //fetches customers from the database in a paginated format
         Page<Customer> customerPage = customerRepository.findAll(request);
         List<Customer> customerList = customerPage.getContent();
-        if (page >= customerPage.getTotalPages() && customerPage.getTotalPages() != 0) {
-            throw new PageNumberOutOfBoundException("Page " + page + " is out of bound");
-        }
-        if (customerList.isEmpty()) {
+        //No data in DB
+        if (customerPage.getTotalElements() == 0) {
             throw new CustomerDataNotFoundException("No customer data found");
         }
-        List<Reward> rewards = new ArrayList<>();
+        // page out of bound
+        if (page >= customerPage.getTotalPages()) {
+            throw new PageNumberOutOfBoundException("Page " + page + " is out of bound");
+        }
+        List<Reward> rewards = new ArrayList<>(customerList.size());
         //Iterates through each customer and calculates their reward details.
         for (Customer customer : customerList) {
             Reward reward = getReward(customer);
@@ -118,26 +119,27 @@ public class RetailerServiceImpl implements RetailerService {
      * @param customer customer details
      * @return reward response
      */
-
     private Reward getReward(Customer customer) {
-        double totalPoints = 0;
-        Map<String, Double> monthlyPoints = new HashMap<>();
+        long totalPoints = 0;
+        Map<String, Long> monthlyPoints = new HashMap<>();
 
-        LocalDate threeMonthsAgo = LocalDate.now().minusMonths(noOfMonths);
+        LocalDate today = LocalDate.now();
+        LocalDate threeMonthsAgo = today.minusMonths(noOfMonths);
         //fetches all transactions for the given customer within the last 3 months.
         List<Transaction> transactionList =
-                transactionRepository.findByCustomerCustomerIdAndDateAfter(
+                transactionRepository.findByCustomerCustomerIdAndDateBetween(
                         customer.getCustomerId(),
-                        threeMonthsAgo
+                        threeMonthsAgo,
+                        today
                 );
         for (Transaction transaction : transactionList) {
             //Calculates reward points for each transaction
-            double points = RetailerUtil.calculatePoints(transaction.getAmount());
+            long points = RetailerUtil.calculatePoints(transaction.getAmount());
             String yearMonth = YearMonth.from(transaction.getDate()).format(formatter);
             //Aggregates reward points based on year and month.
             monthlyPoints.put(
                     yearMonth,
-                    monthlyPoints.getOrDefault(yearMonth, 0.0) + points
+                    monthlyPoints.getOrDefault(yearMonth, 0L) + points
             );
 
             totalPoints += points;

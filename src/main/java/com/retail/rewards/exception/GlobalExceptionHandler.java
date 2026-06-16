@@ -1,9 +1,13 @@
 package com.retail.rewards.exception;
 
+import com.retail.rewards.dto.ErrorResponse;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.time.LocalDateTime;
 
 /**
  * Global exception handler for the Retail Rewards application.
@@ -22,8 +26,13 @@ public class GlobalExceptionHandler {
      * @return an exception message and HTTP 404 (NOT_FOUND) status
      */
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<String> handleNotFoundException(ResourceNotFoundException ex){
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    public ResponseEntity<ErrorResponse> handleNotFoundException(ResourceNotFoundException ex){
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<ErrorResponse>(response, HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -34,8 +43,13 @@ public class GlobalExceptionHandler {
      */
 
     @ExceptionHandler(InvalidTransactionException.class)
-    public ResponseEntity<String> handleInvalidTransaction(InvalidTransactionException ex){
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ErrorResponse> handleInvalidTransaction(InvalidTransactionException ex){
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
     /**
      * Handles cases where customer data is missing or unavailable.
@@ -44,8 +58,13 @@ public class GlobalExceptionHandler {
      * @return an exception message and HTTP 404 (NOT_FOUND) status
      */
     @ExceptionHandler(CustomerDataNotFoundException.class)
-    public ResponseEntity<String> handleCustomerDataNotFound(CustomerDataNotFoundException ex){
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    public ResponseEntity<ErrorResponse> handleCustomerDataNotFound(CustomerDataNotFoundException ex){
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -55,9 +74,32 @@ public class GlobalExceptionHandler {
      * @return an exception message and HTTP Bad request status
      */
     @ExceptionHandler(PageNumberOutOfBoundException.class)
-    public ResponseEntity<String> handlePaginationError(PageNumberOutOfBoundException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ErrorResponse> handlePaginationError(PageNumberOutOfBoundException ex) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    /**
+     * Handles exception where we pass invalid inputs as requestParams or path variables.
+     *
+     * @param ex  thrown when invalid inputs
+     * @return an exception message and HTTP Bad request status
+     */
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex){
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+    }
+
 
     /**
      * Handles any generic or unexpected exceptions not explicitly mapped.
@@ -67,7 +109,14 @@ public class GlobalExceptionHandler {
      */
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenricException(Exception ex){
-        return new ResponseEntity<>("something went wrong: "+ex.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<ErrorResponse> handleGenricException(Exception ex){
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                "something went wrong: "+ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+
 }
