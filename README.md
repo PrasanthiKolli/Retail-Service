@@ -2,7 +2,7 @@
 
 ##  Overview
 The **Retail Rewards Microservice** is a Spring Boot application that calculates customer reward points based on their transactions.  
-It processes transaction data for a 3‑month period, computes monthly reward points, and provides a total summary per customer.
+It processes transaction data for last 3‑months period, computes monthly reward points, and provides a total summary per customer in paginated format.
 
 This service is designed to demonstrate how to build a RESTful microservice with proper exception handling, modular design, and clean code practices.
 
@@ -148,40 +148,31 @@ Status: 400 BAD_REQUEST
 ```
 ---
 ## Exception Handling:
-  
-    404 NOT_FOUND → ResourceNotFoundException →  Resource not found.
+
     400 BAD_REQUEST → InvalidTransactionException → Invalid transaction.
-    404 NOT_FOUND → CustomerDataNotFoundException → Customer data not available.
+    404 NOT_FOUND → CustomerDataNotFoundException → Customer data not found.
     400 BAD_REQUEST → PageNumberOutOfBoundException → page number is out of bound
     400 BAD_REQUEST → ConstraintViolationException → invalid input
     500 INTERNAL_SERVER_ERROR → Exception → Generic error.
 ---
 ##  Project Structure
 
-- **Controller:**  
-  [RewardsController](https://github.com/PrasanthiKolli/Retail-Service/blob/main/src/main/java/com/retail/rewards/controller/RetailerController.java)
+- **Controller:** [RewardsController](https://github.com/PrasanthiKolli/Retail-Service/blob/main/src/main/java/com/retail/rewards/controller/RetailerController.java)
 
-- **Service:**  
-  [RewardsService](https://github.com/PrasanthiKolli/Retail-Service/blob/main/src/main/java/com/retail/rewards/service/impl/RetailerServiceImpl.java)
+- **Service:** [RewardsService](https://github.com/PrasanthiKolli/Retail-Service/blob/main/src/main/java/com/retail/rewards/service/impl/RetailerServiceImpl.java)
 
-- **Utility:**  
-  [RewardCalculator](https://github.com/PrasanthiKolli/Retail-Service/blob/main/src/main/java/com/retail/rewards/util/RetailerUtil.java)
+- **Utility:** [RetailerUtil](https://github.com/PrasanthiKolli/Retail-Service/blob/main/src/main/java/com/retail/rewards/util/RetailerUtil.java)
 
-- **Entities:**  
-  [Entities](https://github.com/PrasanthiKolli/Retail-Service/tree/main/src/main/java/com/retail/rewards/entity)
+- **Entities:** [Entity package](https://github.com/PrasanthiKolli/Retail-Service/tree/main/src/main/java/com/retail/rewards/entity)
 
-- **DTOs:**  
-  [DTOs](https://github.com/PrasanthiKolli/Retail-Service/tree/main/src/main/java/com/retail/rewards/dto)
+- **DTOs:** [DTO package](https://github.com/PrasanthiKolli/Retail-Service/tree/main/src/main/java/com/retail/rewards/dto)
 
-- **Exception:**
-  [Exception](https://github.com/PrasanthiKolli/Retail-Service/tree/main/src/main/java/com/retail/rewards/exception)
+- **Exception:** [Exception package](https://github.com/PrasanthiKolli/Retail-Service/tree/main/src/main/java/com/retail/rewards/exception)
 
-- **repository**
-  [Repository](https://github.com/PrasanthiKolli/Retail-Service/tree/main/src/main/java/com/retail/rewards/repository)
+- **Repository:** [Repository package](https://github.com/PrasanthiKolli/Retail-Service/tree/main/src/main/java/com/retail/rewards/repository)
 
-- **Tests:**  
-  [Test Classes](https://github.com/PrasanthiKolli/Retail-Service/tree/main/src/test)
-  ``
+- **Tests:** [Test Classes](https://github.com/PrasanthiKolli/Retail-Service/tree/main/src/test)
+  
 ---
 ## Database (H2)
 

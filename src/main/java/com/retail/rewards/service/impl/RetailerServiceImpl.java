@@ -5,7 +5,6 @@ import com.retail.rewards.dto.PageableReward;
 import com.retail.rewards.dto.Reward;
 import com.retail.rewards.exception.CustomerDataNotFoundException;
 import com.retail.rewards.exception.PageNumberOutOfBoundException;
-import com.retail.rewards.exception.ResourceNotFoundException;
 import com.retail.rewards.entity.Customer;
 import com.retail.rewards.entity.Transaction;
 import com.retail.rewards.repository.CustomerRepository;
@@ -24,17 +23,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Implementation for RewardService
  * <p>
  * Contains business logic to :
- * -Filter transactions within lst 3 months.
+ * -Filter transactions within last 3 months.
  * -Calculate reward points.
  * -Aggregate monthly and total rewards for each customer.
  */
@@ -67,13 +64,16 @@ public class RetailerServiceImpl implements RetailerService {
     @Override
     public Reward getRewardByCustomerId(Long customerId) {
         //fetch customer details based on id.
-        Optional<Customer> customer = customerRepository.findById(customerId);
-        if(customer.isPresent()){
-            return getReward(customer.get());
-        }
-        //exception when customer with id is not present.
-        throw new ResourceNotFoundException("Customer with id " + customerId + " not found");
+        Customer customer = customerRepository.findById(customerId).orElseThrow(()->new CustomerDataNotFoundException("Customer with id "+customerId+" not found "));
+
+        // Date range calculation
+        LocalDate today = LocalDate.now();
+        LocalDate threeMonthsAgo = today.minusMonths(noOfMonths);
+        //fetching transaction list for the customer based on date range and customerId
+        List<Transaction> transactionList = transactionRepository.findByCustomerCustomerIdAndDateBetween(customer.getCustomerId(),threeMonthsAgo,today);
+        return buildReward(customer,transactionList);
     }
+
 
     /**
      * Retrieves a paginated list of reward details for all customers.
@@ -93,17 +93,27 @@ public class RetailerServiceImpl implements RetailerService {
         if (customerPage.getTotalElements() == 0) {
             throw new CustomerDataNotFoundException("No customer data found");
         }
-        // page out of bound
+        // check if page number is out of bound
         if (page >= customerPage.getTotalPages()) {
-            throw new PageNumberOutOfBoundException("Page " + page + " is out of bound");
+            throw new PageNumberOutOfBoundException("Page " + page + " is out of bound as we have only "+customerPage.getTotalPages()+" pages");
         }
-        List<Reward> rewards = new ArrayList<>(customerList.size());
-        //Iterates through each customer and calculates their reward details.
-        for (Customer customer : customerList) {
-            Reward reward = getReward(customer);
+        // date range calcuation
+        LocalDate today = LocalDate.now();
+        LocalDate threeMonthsAgo = today.minusMonths(noOfMonths);
+        //Extract customer IDs
+        List<Long> customerIds = customerList.stream().map(Customer::getCustomerId).toList();
 
-            rewards.add(reward);
-        }
+        //fetch transactionList based on customerIds
+        List<Transaction> transactionList = transactionRepository.findByCustomerCustomerIdInAndDateBetween(customerIds,threeMonthsAgo,today);
+        // group transactions by customerId
+        Map<Long,List<Transaction>> transactionsByCustomer = transactionList.stream().collect(Collectors.groupingBy(t -> t.getCustomer().getCustomerId()));
+
+        //build rewards
+        List<Reward> rewards = customerList.stream().map(
+                c-> buildReward(c,transactionsByCustomer.getOrDefault(c.getCustomerId(),List.of()))
+        ).toList();
+
+        //build pageable reward
         PageableReward pageableReward = new PageableReward();
         pageableReward.setCustomerList(rewards);
         pageableReward.setPageSize(customerPage.getSize());
@@ -119,41 +129,30 @@ public class RetailerServiceImpl implements RetailerService {
      * @param customer customer details
      * @return reward response
      */
-    private Reward getReward(Customer customer) {
-        long totalPoints = 0;
-        Map<String, Long> monthlyPoints = new HashMap<>();
+    private Reward buildReward(Customer customer,List<Transaction> transactions) {
+        // monthly points calculation
+        Map<String, Long> monthlyPoints = transactions.stream().collect(Collectors.groupingBy(
+                t -> YearMonth.from(t.getDate()).format(formatter),
+                Collectors.summingLong(t ->RetailerUtil.calculatePoints(t.getAmount()))
+        ));
 
-        LocalDate today = LocalDate.now();
-        LocalDate threeMonthsAgo = today.minusMonths(noOfMonths);
-        //fetches all transactions for the given customer within the last 3 months.
-        List<Transaction> transactionList =
-                transactionRepository.findByCustomerCustomerIdAndDateBetween(
-                        customer.getCustomerId(),
-                        threeMonthsAgo,
-                        today
-                );
-        for (Transaction transaction : transactionList) {
-            //Calculates reward points for each transaction
-            long points = RetailerUtil.calculatePoints(transaction.getAmount());
-            String yearMonth = YearMonth.from(transaction.getDate()).format(formatter);
-            //Aggregates reward points based on year and month.
-            monthlyPoints.put(
-                    yearMonth,
-                    monthlyPoints.getOrDefault(yearMonth, 0L) + points
-            );
+        //convert to MonthlyReward list (sorted by month)
+        List<MonthlyReward> monthlyRewards =monthlyPoints.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByKey()) // ensure order
+                .map(m -> new MonthlyReward(m.getKey(),m.getValue()))
+                .toList();
 
-            totalPoints += points;
-        }
-        // Monthly rewards are grouped using a year-month format
-        List<MonthlyReward> monthlyRewards = new ArrayList<>();
-        for (String yearMonth : monthlyPoints.keySet()) {
-            monthlyRewards.add(new MonthlyReward(yearMonth, monthlyPoints.get(yearMonth)));
-        }
+        // total points calculation
+        long totalPoints = monthlyRewards.stream().mapToLong(MonthlyReward::getPoints).sum();
+
+        //build reward
         Reward reward = new Reward();
-        reward.setCustomerName(customer.getName());
         reward.setMonthlyRewards(monthlyRewards);
+        reward.setCustomerName(customer.getName());
         reward.setCustomerId(customer.getCustomerId());
         reward.setTotalPoints(totalPoints);
+
         return reward;
     }
 }

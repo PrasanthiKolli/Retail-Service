@@ -9,6 +9,7 @@ INSERT INTO customers (customer_name) VALUES ('Grace Lee');
 INSERT INTO customers (customer_name) VALUES ('Henry Clark');
 INSERT INTO customers (customer_name) VALUES ('Isabella Davis');
 INSERT INTO customers (customer_name) VALUES ('Jack White');
+INSERT INTO customers (customer_name) VALUES ('Henry Grace');
 
 
 -- Transactions for Customer 1
@@ -88,6 +89,9 @@ VALUES (150, CURRENT_DATE - 4, 9);
 
 INSERT INTO transactions (amount, date, customer_id)
 VALUES (80, CURRENT_DATE - 155, 9);
+
+INSERT INTO transactions (amount, date, customer_id)
+VALUES (120.09999999999999, CURRENT_DATE - 55, 9);
 
 -- Customer 10
 INSERT INTO transactions (amount, date, customer_id)

@@ -29,7 +29,7 @@ public class RetailerController {
     private final RetailerService retailerService;
 
     @Autowired
-    public RetailerController(RetailerService retailerService){
+    public RetailerController(RetailerService retailerService) {
         this.retailerService = retailerService;
     }
 
@@ -40,7 +40,7 @@ public class RetailerController {
      */
 
     @GetMapping()
-    public ResponseEntity<PageableReward> getRewards(@RequestParam(defaultValue ="0") @Min(value = 0,message = "Page index cannot be negative") int page, @RequestParam(defaultValue = "5") @Min(value = 1, message = "Size must be at least 1") @Max(100) int size) {
+    public ResponseEntity<PageableReward> getRewards(@RequestParam(defaultValue = "0") @Min(value = 0, message = "Page index cannot be negative") int page, @RequestParam(defaultValue = "5") @Min(value = 1, message = "Size must be at least 1") @Max(100) int size) {
 
         PageableReward reward = retailerService.getRewards(page, size);
         return new ResponseEntity<>(reward, HttpStatus.OK);

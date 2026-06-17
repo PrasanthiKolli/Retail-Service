@@ -19,9 +19,6 @@ public class GlobalExceptionHandlerTest {
     private GlobalExceptionHandler exceptionHandler;
 
     @Mock
-    private ResourceNotFoundException resourceNotFoundException;
-
-    @Mock
     private InvalidTransactionException invalidTransactionException;
 
     @Mock
@@ -38,13 +35,6 @@ public class GlobalExceptionHandlerTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    void testHandleNotFoundException(){
-
-        ResponseEntity<ErrorResponse> response = exceptionHandler.handleNotFoundException(resourceNotFoundException);
-
-        assertEquals(404, response.getStatusCode().value());
-    }
 
     @Test
     void testHandleInvalidTransaction(){

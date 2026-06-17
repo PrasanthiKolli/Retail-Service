@@ -6,7 +6,6 @@ import com.retail.rewards.entity.Customer;
 import com.retail.rewards.entity.Transaction;
 import com.retail.rewards.exception.CustomerDataNotFoundException;
 import com.retail.rewards.exception.PageNumberOutOfBoundException;
-import com.retail.rewards.exception.ResourceNotFoundException;
 import com.retail.rewards.repository.CustomerRepository;
 import com.retail.rewards.repository.TransactionRepository;
 import com.retail.rewards.service.impl.RetailerServiceImpl;
@@ -28,7 +27,11 @@ import java.util.Optional;
 import java.util.Collections;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.any;
@@ -87,7 +90,7 @@ class RetailerServiceImplTest {
         when(customerRepository.findById(1L))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
+        assertThrows(CustomerDataNotFoundException.class,
                 () -> retailerService.getRewardByCustomerId(1L));
     }
 

@@ -35,11 +35,9 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false,fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
-
-
 
     @Column(nullable = false, precision = 10, scale = 2)
     @NotNull
@@ -48,6 +46,7 @@ public class Transaction {
     private BigDecimal amount;
 
     @Column(nullable = false)
+    @NotNull
     private LocalDate date;
 
 }

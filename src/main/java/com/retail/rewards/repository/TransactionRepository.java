@@ -6,12 +6,16 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+
 /**
  * Repository class responsible for providing transaction data.
  */
 @Repository
-public interface TransactionRepository extends JpaRepository<Transaction,Long> {
+public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+
+    //List of last 3 months transactions based on list of customerIds.
+    List<Transaction> findByCustomerCustomerIdInAndDateBetween(List<Long> customerIds, LocalDate threeMonthsAgo, LocalDate today);
 
     //List of last 3 months transactions based on customerId.
-    List<Transaction> findByCustomerCustomerIdAndDateBetween(Long customerId, LocalDate threeMonthsAgo, LocalDate today);
+    List<Transaction> findByCustomerCustomerIdAndDateBetween(Long customerIds, LocalDate threeMonthsAgo, LocalDate today);
 }
