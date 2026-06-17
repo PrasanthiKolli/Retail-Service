@@ -136,14 +136,14 @@ Status: 200 OK
 #  Error Response Example:
 **Scenario:** Invalid page number (out of bound)
 **Request:** 
-GET http://localhost:8082/rewards?page=10&size=5
+GET http://localhost:8082/rewards/12
 **Response:**
 Status: 400 BAD_REQUEST
 ```json
 {
-  "status": 400,
-  "message": "Page 10 is out of bound",
-  "timestamp": "2026-06-16T14:10:57.9573939"
+  "status": 404,
+  "message": "Customer with id 12 not found ",
+  "timestamp": "2026-06-17T17:35:58.8706751"
 }
 ```
 ---
