@@ -54,8 +54,8 @@ Customers earn:
 ---
 ## DTOs (Data Models)
 ### Monthly Rewards:
--`yearMonth` → YearMonth in yyyy-MMMM format (e.g., 2025-January)
--`points` → Reward points earned during that month
+- `yearMonth` → YearMonth in yyyy-MMMM format (e.g., 2025-January)
+- `points` → Reward points earned during that month
 ---
 ### Reward:
 - `customerId` → Unique identifier of the customer
@@ -65,7 +65,6 @@ Customers earn:
 - `totalPoints` → Total accumulated reward points
 ---
 ### Pageable Reward
-
 - `customerList` → List of customers with reward details
 - `currentPage` → Current page number
 - `pageSize` → Number of records per page
@@ -92,6 +91,7 @@ If a customer does not have any transactions within the specified period:
    totalPoints will be 0
    The hasTransactions flag will be set to false
    A log entry will be recorded for traceability
+
 **Request:**
 GET http://localhost:8082/rewards?page=0&size=2
 
@@ -138,10 +138,6 @@ GET http://localhost:8082/rewards?page=0&size=2
 ### GET /rewards/{customerId}
 
 **Description:**  
-Fetch reward points for a specific customer based on customerId.
-### GET /rewards/{customerId}
-
-**Description:**  
 Fetch reward details for a specific customer based on the provided customerId.
 This API calculates reward points from the customer’s transactions within a configurable time period (e.g., last 3 months).
 
@@ -149,26 +145,7 @@ The response includes:
    Month-wise reward points
    Total reward points
    A flag indicating whether the customer has any transactions
-**Request:**  
-GET http://localhost:8082/rewards/1
 
-**Response:**  
-Status: 200 OK
-
-```json
-{
-   "customerId": 1,
-   "customerName": "Alice Johnson",
-   "hasTransactions": true,
-   "monthlyRewards": [
-      {
-         "yearMonth": "2026-June",
-         "points": 180
-      }
-   ],
-   "totalPoints": 180
-}
-```
 **Request:**  
 GET http://localhost:8082/rewards/1
 
@@ -192,8 +169,10 @@ Status: 200 OK
 ---
 #  Error Response Example:
 **Scenario:** Customer not present in the DB.
+
 **Request:** 
 GET http://localhost:8082/rewards/12
+
 **Response:**
 Status: 400 BAD_REQUEST
 ```json
