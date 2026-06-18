@@ -6,6 +6,7 @@ import com.retail.rewards.dto.Reward;
 import com.retail.rewards.service.RetailerService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RestController
 @RequestMapping("/rewards")
 @Validated
+@Slf4j
 public class RetailerController {
 
     // constructor injection
@@ -41,8 +43,9 @@ public class RetailerController {
 
     @GetMapping()
     public ResponseEntity<PageableReward> getRewards(@RequestParam(defaultValue = "0") @Min(value = 0, message = "Page index cannot be negative") int page, @RequestParam(defaultValue = "5") @Min(value = 1, message = "Size must be at least 1") @Max(100) int size) {
-
+        log.info("Request received to fetch reward details | page:{},size:{}",page,size);
         PageableReward reward = retailerService.getRewards(page, size);
+        log.info("Completed fetching all customer rewards");
         return new ResponseEntity<>(reward, HttpStatus.OK);
     }
 
@@ -55,9 +58,9 @@ public class RetailerController {
 
     @GetMapping("/{customerId}")
     public ResponseEntity<Reward> getRewardByCustomerId(@PathVariable @Min(1) Long customerId) {
-
+        log.info("Request received to fetch reward details for Customer with Id: {}",customerId );
         Reward result = retailerService.getRewardByCustomerId(customerId);
-
+        log.info("Successfully fetched reward details for the customer with id: {}",customerId);
         return ResponseEntity.ok(result);
 
     }

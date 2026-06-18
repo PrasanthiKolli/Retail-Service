@@ -43,10 +43,10 @@ public class RetailerControllerTest {
         MonthlyReward janReward = new MonthlyReward("2026-January", 50L);
         MonthlyReward febReward = new MonthlyReward("2026-February", 70L);
 
-        Reward reward1 = new Reward(1L,"Alice", Arrays.asList(janReward, febReward), 120L);
-        Reward reward2 = new Reward(2L,"Bob", Collections.singletonList(new MonthlyReward("March", 200L)), 200L);
-        Reward reward3 = new Reward(3L,"Alice", Arrays.asList(janReward, febReward), 120L);
-        Reward reward4 = new Reward(4L,"Bob", Collections.singletonList(new MonthlyReward("March", 200L)), 200L);
+        Reward reward1 = new Reward(1L,"Alice",true, Arrays.asList(janReward, febReward), 120L);
+        Reward reward2 = new Reward(2L,"Bob",true, Collections.singletonList(new MonthlyReward("March", 200L)), 200L);
+        Reward reward3 = new Reward(3L,"Alice",true, Arrays.asList(janReward, febReward), 120L);
+        Reward reward4 = new Reward(4L,"Bob",true, Collections.singletonList(new MonthlyReward("March", 200L)), 200L);
         List<Reward> rewards = Arrays.asList(reward1, reward2,reward3,reward4);
         PageableReward pageableReward = new PageableReward();
         pageableReward.setCustomerList(rewards);
@@ -73,7 +73,7 @@ public class RetailerControllerTest {
     void testGetRewardByCustomerId() {
         // Arrange
         MonthlyReward aprReward = new MonthlyReward("2026-April", 150L);
-        Reward reward1 = new Reward(1L,"Alice", Arrays.asList(aprReward), 150L);
+        Reward reward1 = new Reward(1L,"Alice",true, List.of(aprReward), 150L);
 
         when(retailerService.getRewardByCustomerId(1L)).thenReturn(reward1);
 

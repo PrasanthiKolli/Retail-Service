@@ -52,55 +52,19 @@ Customers earn:
    http://localhost:8082
    ```
 ---
-## API Endpoints
-
-- GET /rewards?page=4&size=2 → Fetch rewards for all customers based on page number and page size in pagination format.
-- GET /rewards/{customerId} → Fetch rewards for a specific customer.
-
-## Example Response: 
-
-**Request:**
-GET http://localhost:8082/rewards?page=4&size=2
-
-**Response Status:**
-200 OK
-```json
-{
-  "customerList": [
-    {
-      "customerId": 1,
-      "customerName": "Alice Johnson",
-      "monthlyRewards": [
-        {
-          "yearMonth": "2026-June",
-          "points": 180
-        }
-      ],
-      "totalPoints": 180
-    },
-    {
-      "customerId": 2,
-      "customerName": "Bob Smith",
-      "monthlyRewards": [
-        {
-          "yearMonth": "2026-April",
-          "points": 150
-        },
-        {
-          "yearMonth": "2026-June",
-          "points": 250
-        }
-      ],
-      "totalPoints": 400
-    }
-  ],
-  "currentPage": 1,
-  "pageSize": 2,
-  "totalPages": 5,
-  "totalElements": 10
-}
-```
-### Pagination Details
+## DTOs (Data Models)
+### Monthly Rewards:
+-`yearMonth` → YearMonth in yyyy-MMMM format (e.g., 2025-January)
+-`points` → Reward points earned during that month
+---
+### Reward:
+- `customerId` → Unique identifier of the customer
+- `customerName` → Name of the customer
+- `hasTransactions` → Indicates whether the customer has any transactions
+- `monthlyRewards` → List of reward points grouped by month
+- `totalPoints` → Total accumulated reward points
+---
+### Pageable Reward
 
 - `customerList` → List of customers with reward details
 - `currentPage` → Current page number
@@ -108,11 +72,83 @@ GET http://localhost:8082/rewards?page=4&size=2
 - `totalPages` → Total number of pages available
 - `totalElements` → Total number of records
 ---
+### ErrorResponse
+- `status` → Http status code for exception
+- `message` → Specific error message
+- `timeStamp` → When the error occurred
+---
+## API Endpoints
+### GET /rewards?page=0&size=2
+**Description:**  
+Fetch a paginated list of reward details for all customers.
+This API retrieves customers from the database in a paginated manner and calculates reward points based on their transactions within the configured time window (e.g., last 3 months).
+For each customer:
+   Transactions are filtered based on the configured duration
+   Reward points are calculated using predefined business rules
+   Results are grouped by month and aggregated into a total
+
+If a customer does not have any transactions within the specified period:
+   The monthlyRewards list will be empty
+   totalPoints will be 0
+   The hasTransactions flag will be set to false
+   A log entry will be recorded for traceability
+**Request:**
+GET http://localhost:8082/rewards?page=0&size=2
+
+**Response Status:**
+200 OK
+```json
+{
+   "customerList": [
+      {
+         "customerId": 1,
+         "customerName": "Alice Johnson",
+         "hasTransactions": true,
+         "monthlyRewards": [
+            {
+               "yearMonth": "2026-June",
+               "points": 180
+            }
+         ],
+         "totalPoints": 180
+      },
+      {
+         "customerId": 2,
+         "customerName": "Bob Smith",
+         "hasTransactions": true,
+         "monthlyRewards": [
+            {
+               "yearMonth": "2026-April",
+               "points": 150
+            },
+            {
+               "yearMonth": "2026-June",
+               "points": 250
+            }
+         ],
+         "totalPoints": 400
+      }
+   ],
+   "currentPage": 1,
+   "pageSize": 2,
+   "totalPages": 6,
+   "totalElements": 11
+}
+```
 ### GET /rewards/{customerId}
 
 **Description:**  
-Fetch reward points for a specific customer.
+Fetch reward points for a specific customer based on customerId.
+### GET /rewards/{customerId}
 
+**Description:**  
+Fetch reward details for a specific customer based on the provided customerId.
+This API calculates reward points from the customer’s transactions within a configurable time period (e.g., last 3 months).
+
+The response includes:
+   Month-wise reward points
+   Total reward points
+   A flag indicating whether the customer has any transactions
 **Request:**  
 GET http://localhost:8082/rewards/1
 
@@ -121,20 +157,41 @@ Status: 200 OK
 
 ```json
 {
-  "customerId": 1,
-  "customerName": "Alice Johnson",
-  "monthlyRewards": [
-    {
-      "yearMonth": "2026-June",
-      "points": 180
-    }
-  ],
-  "totalPoints": 180
+   "customerId": 1,
+   "customerName": "Alice Johnson",
+   "hasTransactions": true,
+   "monthlyRewards": [
+      {
+         "yearMonth": "2026-June",
+         "points": 180
+      }
+   ],
+   "totalPoints": 180
+}
+```
+**Request:**  
+GET http://localhost:8082/rewards/1
+
+**Response:**  
+Status: 200 OK
+
+```json
+{
+   "customerId": 1,
+   "customerName": "Alice Johnson",
+   "hasTransactions": true,
+   "monthlyRewards": [
+      {
+         "yearMonth": "2026-June",
+         "points": 180
+      }
+   ],
+   "totalPoints": 180
 }
 ```
 ---
 #  Error Response Example:
-**Scenario:** Invalid page number (out of bound)
+**Scenario:** Customer not present in the DB.
 **Request:** 
 GET http://localhost:8082/rewards/12
 **Response:**
@@ -194,4 +251,4 @@ This ensures consistent setup across environments.
 
 ## Author
 
-Developed by Prasanthi Kolli
+Developed by **Prasanthi Kolli**

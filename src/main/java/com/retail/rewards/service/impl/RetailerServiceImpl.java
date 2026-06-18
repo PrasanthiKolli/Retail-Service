@@ -11,6 +11,7 @@ import com.retail.rewards.repository.CustomerRepository;
 import com.retail.rewards.repository.TransactionRepository;
 import com.retail.rewards.service.RetailerService;
 import com.retail.rewards.util.RetailerUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional(readOnly=true)
+@Slf4j
 public class RetailerServiceImpl implements RetailerService {
 
     @Value("${app.noOfMonths}")
@@ -64,12 +66,18 @@ public class RetailerServiceImpl implements RetailerService {
     @Override
     public Reward getRewardByCustomerId(Long customerId) {
         //fetch customer details based on id.
-        Customer customer = customerRepository.findById(customerId).orElseThrow(()->new CustomerDataNotFoundException("Customer with id "+customerId+" not found "));
+        log.info("Fetching reward for customerId={}", customerId);
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(()-> {
+                    log.error("Customer not found with id={}", customerId);
+                   return new CustomerDataNotFoundException("Customer with id " + customerId + " not found ");
+                });
 
         // Date range calculation
         LocalDate today = LocalDate.now();
         LocalDate threeMonthsAgo = today.minusMonths(noOfMonths);
         //fetching transaction list for the customer based on date range and customerId
+        log.debug("Transaction date range: {} to {}", threeMonthsAgo, today);
         List<Transaction> transactionList = transactionRepository.findByCustomerCustomerIdAndDateBetween(customer.getCustomerId(),threeMonthsAgo,today);
         return buildReward(customer,transactionList);
     }
@@ -84,20 +92,24 @@ public class RetailerServiceImpl implements RetailerService {
     @Override
     public PageableReward getRewards(int page, int size) {
         //creates a pageable request with sorting based on customerId in ascending
+        log.info("Fetching paginated rewards: page={}, size={}", page, size);
         Pageable request=PageRequest.of(page, size, Sort.by("customerId").ascending());
 
         //fetches customers from the database in a paginated format
         Page<Customer> customerPage = customerRepository.findAll(request);
-        List<Customer> customerList = customerPage.getContent();
         //No data in DB
         if (customerPage.getTotalElements() == 0) {
+            log.error("No customers found in database");
             throw new CustomerDataNotFoundException("No customer data found");
         }
         // check if page number is out of bound
         if (page >= customerPage.getTotalPages()) {
+            log.error("Requested page {} exceeds total pages {}", page, customerPage.getTotalPages());
             throw new PageNumberOutOfBoundException("Page " + page + " is out of bound as we have only "+customerPage.getTotalPages()+" pages");
         }
-        // date range calcuation
+        List<Customer> customerList = customerPage.getContent();
+        log.debug("Customers fetched: count={}", customerList.size());
+        // date range calculation
         LocalDate today = LocalDate.now();
         LocalDate threeMonthsAgo = today.minusMonths(noOfMonths);
         //Extract customer IDs
@@ -105,6 +117,7 @@ public class RetailerServiceImpl implements RetailerService {
 
         //fetch transactionList based on customerIds
         List<Transaction> transactionList = transactionRepository.findByCustomerCustomerIdInAndDateBetween(customerIds,threeMonthsAgo,today);
+        log.debug("Total transactions fetched for page: {}", transactionList.size());
         // group transactions by customerId
         Map<Long,List<Transaction>> transactionsByCustomer = transactionList.stream().collect(Collectors.groupingBy(t -> t.getCustomer().getCustomerId()));
 
@@ -120,6 +133,7 @@ public class RetailerServiceImpl implements RetailerService {
         pageableReward.setCurrentPage(customerPage.getNumber()+1);
         pageableReward.setTotalElements(customerPage.getTotalElements());
         pageableReward.setTotalPages(customerPage.getTotalPages());
+        log.info("Paginated rewards prepared successfully for page={}", page);
         return pageableReward;
     }
 
@@ -130,6 +144,16 @@ public class RetailerServiceImpl implements RetailerService {
      * @return reward response
      */
     private Reward buildReward(Customer customer,List<Transaction> transactions) {
+        log.debug("Building reward for customerId={}, transactionsCount={}",
+                customer.getCustomerId(), transactions.size());
+        boolean hasTransactions = !transactions.isEmpty();
+        //Log when no transactions
+        if (!hasTransactions) {
+            log.info("Customer with id={} and name={} has no transactions",
+                    customer.getCustomerId(),
+                    customer.getName());
+        }
+
         // monthly points calculation
         Map<String, Long> monthlyPoints = transactions.stream().collect(Collectors.groupingBy(
                 t -> YearMonth.from(t.getDate()).format(formatter),
@@ -152,6 +176,9 @@ public class RetailerServiceImpl implements RetailerService {
         reward.setCustomerName(customer.getName());
         reward.setCustomerId(customer.getCustomerId());
         reward.setTotalPoints(totalPoints);
+        reward.setHasTransactions(hasTransactions);
+        log.debug("Reward built: customerId={}, totalPoints={}",
+                customer.getCustomerId(), totalPoints);
 
         return reward;
     }

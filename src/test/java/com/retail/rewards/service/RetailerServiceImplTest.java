@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.any;
@@ -107,14 +108,39 @@ class RetailerServiceImplTest {
         when(customerRepository.findAll(any(Pageable.class)))
                 .thenReturn(page);
 
-        when(transactionRepository.findByCustomerCustomerIdAndDateBetween(
-                eq(1L), any(LocalDate.class),any(LocalDate.class)))
+        when(transactionRepository.findByCustomerCustomerIdInAndDateBetween(
+                anyList(), any(LocalDate.class),any(LocalDate.class)))
                 .thenReturn(List.of(createTxn(150, 5)));
 
         PageableReward result = retailerService.getRewards(0, 5);
 
         assertNotNull(result);
         assertEquals(1, result.getCustomerList().size());
+        assertEquals(1, result.getCurrentPage()); // +1 logic
+        assertEquals(1, result.getTotalElements());
+    }
+
+    @Test
+    void testGetRewards_emptyTransactions() {
+
+        List<Customer> customers = List.of(customer);
+
+        Page<Customer> page = new PageImpl<>(customers,
+                PageRequest.of(0, 5),
+                1);
+
+        when(customerRepository.findAll(any(Pageable.class)))
+                .thenReturn(page);
+
+        when(transactionRepository.findByCustomerCustomerIdInAndDateBetween(
+                anyList(), any(LocalDate.class),any(LocalDate.class)))
+                .thenReturn(List.of());
+
+        PageableReward result = retailerService.getRewards(0, 5);
+
+        assertNotNull(result);
+        assertEquals(1, result.getCustomerList().size());
+        assertEquals(false,result.getCustomerList().get(0).getHasTransactions());
         assertEquals(1, result.getCurrentPage()); // +1 logic
         assertEquals(1, result.getTotalElements());
     }
@@ -156,7 +182,7 @@ class RetailerServiceImplTest {
                 .thenReturn(Optional.of(customer));
 
         List<Transaction> transactions = Arrays.asList(
-                createTxn(120, 5),   // current month
+                createTxn(120, 5),   // same month
                 createTxn(130, 6),   // same month
                 createTxn(200, 40)   // previous month
         );
@@ -169,7 +195,7 @@ class RetailerServiceImplTest {
 
         assertEquals(1L, result.getCustomerId());
         assertFalse(result.getMonthlyRewards().isEmpty());
-        assertTrue(result.getTotalPoints() > 0);
+        assertEquals(450L,result.getTotalPoints() );
     }
 
     // HELPER METHOD

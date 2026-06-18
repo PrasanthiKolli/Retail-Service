@@ -23,6 +23,8 @@ public class Reward {
 
     private Long customerId;
     private String customerName;
+    private Boolean hasTransactions;
     private List<MonthlyReward> monthlyRewards;
     private Long totalPoints;
+
 }
